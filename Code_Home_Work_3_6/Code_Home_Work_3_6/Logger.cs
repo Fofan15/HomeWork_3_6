@@ -25,7 +25,7 @@ namespace Code_Home_Work_3_6
 
         private  int _countLog;
 
-        private int _countBackupLog = 10;
+        private int _countBackupLog;
 
         public event EventHandler BackupEvent;
 
@@ -38,6 +38,7 @@ namespace Code_Home_Work_3_6
             MyData myData = JsonSerializer.Deserialize<MyData>(jsonString);
 
             _backupAfterNLogs = myData.N;
+            _countBackupLog = myData.N;
         }
 
         public  async Task LogAsync(string message)
@@ -45,7 +46,14 @@ namespace Code_Home_Work_3_6
             File.Create(_logFileName).Close();
 
                 using var writer = new StreamWriter(_logFileName);
-                await writer.WriteLineAsync($"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}: {message}");
+            await writer.WriteLineAsync($"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}: {message}");
+            _countLog++;
+
+            if (_countLog == _backupAfterNLogs)
+            {
+                _countLog = 0;
+                await BackupAsync();
+            }
         }
 
         public async Task BackupAsync()
